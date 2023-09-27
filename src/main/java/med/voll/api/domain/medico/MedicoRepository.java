@@ -13,6 +13,8 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
 
     Page<Medico> findByActivoTrue(Pageable paginacion);
 
+    // Mi primer cambio en vscode
+
     @Query("""
             select m from Medico
             where m.activo = 1 and
