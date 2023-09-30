@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import med.voll.api.domain.paciente.DatosActualizacionPaciente;
@@ -25,6 +26,7 @@ import med.voll.api.domain.paciente.PacienteRepository;
 
 @RestController
 @RequestMapping("/pacientes")
+@SecurityRequirement(name = "bearer-key")
 public class PacienteController {
 
     @Autowired
@@ -32,7 +34,8 @@ public class PacienteController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<DatosDetallesPaciente> registrar(DatosRegistroPaciente datosRegistroPaciente,
+    public ResponseEntity<DatosDetallesPaciente> registrar(
+            @RequestBody @Valid DatosRegistroPaciente datosRegistroPaciente,
             UriComponentsBuilder uriBuilder) {
         var paciente = pacienteRepository.save(new Paciente(datosRegistroPaciente));
 
