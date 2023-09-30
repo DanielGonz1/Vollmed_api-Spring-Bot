@@ -27,6 +27,8 @@ public class SecurityConfigurations {
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Le indicamos a spring el tipo de sesion
                 .authorizeHttpRequests((authorize) -> authorize.requestMatchers(HttpMethod.POST, "/login")
+                        .permitAll()
+                        .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**")
                         .permitAll().anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
