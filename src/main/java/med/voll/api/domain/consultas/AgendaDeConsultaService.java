@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import med.voll.api.domain.consultas.desafio.ValidadorCancelamientoDeConsulta;
 import med.voll.api.domain.consultas.validacione.ValidadorDeConsultas;
 import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.medico.MedicoRepository;
@@ -23,9 +24,13 @@ public class AgendaDeConsultaService {
     @Autowired
     private ConsultaRepository consultaRepository;
 
+    @Autowired
     List<ValidadorDeConsultas> validadores;
 
-    public void agendar(DatosAgentarConsulta datos) {
+    @Autowired
+    List<ValidadorCancelamientoDeConsulta> validadoresDeCancelamiento;
+
+    public DatosDetalleConsulta agendar(DatosAgentarConsulta datos) {
 
         if (!pacienteRepository.findById(datos.idPaciente()).isPresent()) {
             throw new ValidacionDeIntegridad("Este ID para el paciente no fue encontrado");
@@ -41,8 +46,21 @@ public class AgendaDeConsultaService {
 
         var medico = seleccionarMedico(datos);
 
-        var consulta = new Consulta(null, medico, paciente, datos.fecha());
+        if (medico == null) {
+            throw new ValidacionDeIntegridad("No existe medico para este horario y especialidad");
+        }
+
+        var consulta = new Consulta(medico, paciente, datos.fecha());
         consultaRepository.save(consulta);
+        return new DatosDetalleConsulta(consulta);
+    }
+
+    public void cancelar(DatosCancelamientoConsulta datos) {
+        if (!consultaRepository.existsById(datos.idConsulta()))
+            throw new ValidacionDeIntegridad("Id de la consulta informado no existe!");
+        validadoresDeCancelamiento.forEach(v -> v.validar(datos));
+        var consulta = consultaRepository.getReferenceById(datos.idConsulta());
+        consulta.cancelar(datos.motivo());
     }
 
     private Medico seleccionarMedico(DatosAgentarConsulta datos) {
